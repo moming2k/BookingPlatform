@@ -165,7 +165,13 @@ class BookingsController < ApplicationController
   def calendar
     @services = Service.active.ordered
     @selected_service = params[:service_id].present? ? Service.find(params[:service_id]) : @services.first
-    @month = params[:month].present? ? Date.parse(params[:month]) : Date.current
+    @month = if params[:month].present?
+               # Handle YYYY-MM format by appending -01
+               month_str = params[:month].match?(/^\d{4}-\d{2}$/) ? "#{params[:month]}-01" : params[:month]
+               Date.parse(month_str)
+             else
+               Date.current
+             end
     @available_days = calculate_available_days(@selected_service, @month)
 
     respond_to do |format|

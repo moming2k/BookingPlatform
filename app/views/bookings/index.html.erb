@@ -124,9 +124,13 @@
     text-decoration: none;
   }
 
-  .tab-link:hover {
+  .tab-link:hover:not(.active) {
     color: #374151;
-    background-color: rgba(255, 255, 255, 0.5);
+    /* background-color: rgba(59, 130, 246, 0.08); */ /* Option 1: Subtle blue tint */
+    /* background-color: rgba(16, 185, 129, 0.08); */ /* Option 2: Subtle green tint */
+    /* background-color: rgba(0, 0, 0, 0.05); */ /* Option 3: Slightly darker gray */
+    /* background-color: #e5e7eb; */ /* Option 4: Solid light gray */
+    background-color: rgba(99, 102, 241, 0.08); /* Option 5: Subtle indigo tint */
   }
 
   .tab-link.active {
