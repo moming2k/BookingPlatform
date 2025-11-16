@@ -11,35 +11,38 @@ class SessionsController < ApplicationController
 
     if email.present? && valid_email?(email)
       # Handle soft-deleted users (acts_as_paranoid)
-      # First try to find without paranoid scope
-      user = User.with_deleted.find_by(email: email)
+      # Use find_or_initialize_by with with_deleted scope to handle all cases
+      user = User.with_deleted.where(email: email).first_or_initialize do |u|
+        u.name = params[:name] if params[:name].present?
+      end
 
-      if user&.deleted?
-        # Restore soft-deleted user
+      # If user was soft-deleted, restore them
+      if user.persisted? && user.deleted?
         user.restore
         user.update(name: params[:name]) if params[:name].present?
-      elsif user.nil?
-        # Create new user
-        user = User.create(
-          email: email,
-          name: params[:name]
-        )
       end
-      # else: user exists and is active, use it
 
-      if user.persisted?
-        user.generate_magic_link!
-        MagicLinkMailer.send_magic_link(user).deliver_later
-
-        redirect_to login_path, notice: "Check your email for a magic link to sign in."
-      else
-        flash.now[:alert] = "There was an error: #{user.errors.full_messages.join(', ')}"
-        render :new
+      # Save if new record
+      unless user.persisted?
+        unless user.save
+          flash.now[:alert] = "There was an error: #{user.errors.full_messages.join(', ')}"
+          render :new
+          return
+        end
       end
+
+      # Generate and send magic link
+      user.generate_magic_link!
+      MagicLinkMailer.send_magic_link(user).deliver_later
+
+      redirect_to login_path, notice: "Check your email for a magic link to sign in."
     else
       flash.now[:alert] = "Please enter a valid email address."
       render :new
     end
+  rescue ActiveRecord::RecordNotUnique
+    # Handle race condition where user was created between find and create
+    retry
   end
 
   def magic_link
