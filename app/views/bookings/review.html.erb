@@ -1,0 +1,205 @@
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Back Button -->
+    <div class="mb-6">
+      <%= link_to new_booking_path(service_id: @service), class: "inline-flex items-center text-sm text-gray-600 hover:text-gray-900" do %>
+        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Back to time selection
+      <% end %>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      <!-- Header -->
+      <div class="border-b border-gray-200 px-6 py-4">
+        <h1 class="text-2xl font-bold text-gray-900">Review Your Booking</h1>
+        <p class="text-sm text-gray-600 mt-1">Please review and confirm your booking details</p>
+      </div>
+
+      <!-- Content -->
+      <div class="px-6 py-6 space-y-6">
+        <!-- Service Information -->
+        <div>
+          <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Service</h2>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900"><%= @service.name %></h3>
+                <p class="text-sm text-gray-600 mt-1"><%= @service.description %></p>
+              </div>
+              <% if @service.color.present? %>
+                <div class="w-4 h-4 rounded-full flex-shrink-0" style="background-color: <%= @service.color %>"></div>
+              <% end %>
+            </div>
+            <div class="mt-4 flex items-center text-sm text-gray-600">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <%= @service.duration_minutes %> minutes
+            </div>
+          </div>
+        </div>
+
+        <!-- Date & Time -->
+        <div>
+          <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Date & Time</h2>
+          <div class="bg-primary-50 border border-primary-200 rounded-lg p-4">
+            <div class="flex items-start">
+              <svg class="w-6 h-6 text-primary-600 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              <div>
+                <div class="font-semibold text-gray-900">
+                  <%= @start_time.strftime("%A, %B %d, %Y") %>
+                </div>
+                <div class="text-sm text-gray-700 mt-1">
+                  <%= @start_time.strftime("%I:%M %p") %> - <%= @end_time.strftime("%I:%M %p") %>
+                  <span class="text-gray-500">(<%= @service.duration_minutes %> min)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Your Information Form -->
+        <% unless user_signed_in? %>
+          <%= form_with url: create_guest_booking_bookings_path, method: :post, id: "guest-booking-form", local: true do |f| %>
+            <%= f.hidden_field :service_id, value: @service.id %>
+            <%= f.hidden_field :start_time, value: @start_time %>
+            <%= f.hidden_field :end_time, value: @end_time %>
+
+            <div>
+              <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Your Information</h2>
+              <div class="space-y-4">
+                <div>
+                  <%= f.label :email, "Email Address", class: "block text-sm font-medium text-gray-700 mb-1" %>
+                  <%= f.email_field :email, required: true, class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500", placeholder: "your@email.com" %>
+                  <p class="mt-1 text-xs text-gray-500">We'll send your booking confirmation here</p>
+                </div>
+
+                <div>
+                  <%= f.label :name, "Full Name", class: "block text-sm font-medium text-gray-700 mb-1" %>
+                  <%= f.text_field :name, class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500", placeholder: "John Doe" %>
+                </div>
+
+                <div>
+                  <%= f.label :phone, "Phone Number (Optional)", class: "block text-sm font-medium text-gray-700 mb-1" %>
+                  <%= f.telephone_field :phone, class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500", placeholder: "+1 (555) 000-0000" %>
+                </div>
+
+                <div>
+                  <%= f.label :notes, "Additional Notes (Optional)", class: "block text-sm font-medium text-gray-700 mb-1" %>
+                  <%= f.text_area :notes, rows: 3, class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500", placeholder: "Any special requirements or questions?" %>
+                </div>
+              </div>
+            </div>
+
+            <!-- Price Summary -->
+            <div class="mt-6">
+              <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Price Summary</h2>
+              <div class="bg-gray-50 rounded-lg p-4">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-gray-600">Service Price</span>
+                  <span class="font-semibold">$<%= @service.price %></span>
+                </div>
+                <div class="border-t border-gray-200 pt-2 mt-2">
+                  <div class="flex justify-between items-center">
+                    <span class="text-lg font-bold text-gray-900">Total</span>
+                    <span class="text-2xl font-bold text-primary-600">$<%= @service.price %></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Terms & Conditions -->
+            <div class="mt-6">
+              <label class="flex items-start">
+                <%= f.check_box :accept_terms, required: true, class: "mt-1 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" %>
+                <span class="ml-2 text-sm text-gray-600">
+                  I agree to the <%= link_to "terms and conditions", terms_path, class: "text-primary-600 hover:text-primary-700 underline", target: "_blank" %> and understand that I can cancel up to <%= @service.min_advance_hours %> hours before my appointment for a full refund.
+                </span>
+              </label>
+            </div>
+
+            <!-- Important Information -->
+            <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div class="flex">
+                <svg class="w-5 h-5 text-blue-600 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                </svg>
+                <div class="text-sm text-blue-800">
+                  <p class="font-semibold mb-1">What happens next:</p>
+                  <ul class="list-disc list-inside space-y-1 text-blue-700">
+                    <li>We'll send you a magic link to verify your email</li>
+                    <li>Click the link to confirm your booking</li>
+                    <li>Complete payment to secure your appointment</li>
+                    <li>Receive instant confirmation and calendar invite</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-8 flex flex-col-reverse sm:flex-row gap-3">
+              <%= link_to "Back", new_booking_path(service_id: @service), class: "btn-outline w-full sm:w-auto text-center" %>
+              <%= f.submit "Continue to Payment", class: "btn-primary w-full sm:flex-1 btn-lg" %>
+            </div>
+          <% end %>
+        <% else %>
+          <!-- For signed-in users, show a simpler confirmation -->
+          <%= form_with url: bookings_path, method: :post, local: true do |f| %>
+            <%= f.hidden_field :service_id, value: @service.id %>
+            <%= f.hidden_field :start_time, value: @start_time %>
+            <%= f.hidden_field :end_time, value: @end_time %>
+
+            <div>
+              <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Booking For</h2>
+              <div class="bg-gray-50 rounded-lg p-4">
+                <div class="font-semibold text-gray-900"><%= current_user.name || current_user.email %></div>
+                <div class="text-sm text-gray-600 mt-1"><%= current_user.email %></div>
+              </div>
+            </div>
+
+            <div class="mt-6">
+              <%= f.label :notes, "Additional Notes (Optional)", class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= f.text_area :notes, rows: 3, class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500", placeholder: "Any special requirements or questions?" %>
+            </div>
+
+            <!-- Price Summary -->
+            <div class="mt-6">
+              <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Price Summary</h2>
+              <div class="bg-gray-50 rounded-lg p-4">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-gray-600">Service Price</span>
+                  <span class="font-semibold">$<%= @service.price %></span>
+                </div>
+                <div class="border-t border-gray-200 pt-2 mt-2">
+                  <div class="flex justify-between items-center">
+                    <span class="text-lg font-bold text-gray-900">Total</span>
+                    <span class="text-2xl font-bold text-primary-600">$<%= @service.price %></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-8 flex flex-col-reverse sm:flex-row gap-3">
+              <%= link_to "Back", new_booking_path(service_id: @service), class: "btn-outline w-full sm:w-auto text-center" %>
+              <%= f.submit "Confirm & Pay", class: "btn-primary w-full sm:flex-1 btn-lg" %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Security Badge -->
+    <div class="mt-6 text-center">
+      <div class="inline-flex items-center text-sm text-gray-500">
+        <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        Secure payment processing by Stripe
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,42 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full space-y-8">
+    <div>
+      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        Sign in to your account
+      </h2>
+      <p class="mt-2 text-center text-sm text-gray-600">
+        We'll send you a magic link to sign in
+      </p>
+    </div>
+
+    <%= form_with url: login_path, method: :post, class: "mt-8 space-y-6" do |form| %>
+      <div class="rounded-md shadow-sm -space-y-px">
+        <div>
+          <%= form.label :email, "Email address", class: "sr-only" %>
+          <%= form.email_field :email,
+              required: true,
+              autofocus: true,
+              placeholder: "Email address",
+              class: "appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm" %>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="text-sm">
+          <p class="text-gray-600">
+            No password required - we'll email you a secure link
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <%= form.submit "Send magic link", class: "btn-primary w-full btn-lg" %>
+      </div>
+    <% end %>
+
+    <div class="text-center text-sm text-gray-600">
+      <p>New to our platform?</p>
+      <p class="mt-1">Just enter your email and we'll create an account for you!</p>
+    </div>
+  </div>
+</div>

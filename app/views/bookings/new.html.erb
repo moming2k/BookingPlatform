@@ -1,0 +1,199 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <div class="mb-8">
+    <%= link_to "← Back to Services", services_path, class: "text-primary-600 hover:text-primary-700" %>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Service Details -->
+    <div class="lg:col-span-1">
+      <div class="card sticky top-8">
+        <div class="card-body">
+          <h2 class="text-2xl font-bold mb-4"><%= @service.name %></h2>
+          <p class="text-gray-600 mb-6"><%= @service.description %></p>
+
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600">Duration</span>
+              <span class="font-semibold"><%= @service.duration_minutes %> minutes</span>
+            </div>
+
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600">Price</span>
+              <span class="text-2xl font-bold text-primary-600">$<%= @service.price %></span>
+            </div>
+
+            <div class="pt-4 border-t border-gray-200">
+              <h3 class="font-semibold mb-2">What's included:</h3>
+              <ul class="text-sm text-gray-600 space-y-1">
+                <li>✓ Email confirmation</li>
+                <li>✓ Calendar invite</li>
+                <li>✓ Reminder notifications</li>
+                <li>✓ Easy rescheduling</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calendar and Time Selection -->
+    <div class="lg:col-span-2">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="text-xl font-semibold">Select Date & Time</h3>
+          <p class="text-sm text-gray-600 mt-1">Choose your preferred appointment time</p>
+        </div>
+
+        <div class="card-body">
+          <div id="booking-calendar">
+            <p class="text-sm text-gray-600 mb-4">Select a date to see available time slots:</p>
+            <div id="calendar-grid" class="grid grid-cols-7 gap-2"></div>
+          </div>
+
+          <!-- Time Slots (shown after date selection) -->
+          <div id="time-slots" class="hidden mt-6">
+            <h4 class="font-semibold mb-4">Available Times</h4>
+            <div id="slots-container" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
+          </div>
+
+          <!-- Booking Form -->
+          <%= form_with url: select_time_bookings_path, method: :post, id: "booking-form", class: "hidden mt-6", local: true do |f| %>
+            <%= f.hidden_field :service_id, value: @service.id %>
+            <%= f.hidden_field :start_time, id: "selected-start-time" %>
+            <%= f.hidden_field :end_time, id: "selected-end-time" %>
+
+            <div class="mb-4">
+              <%= f.label :notes, "Additional Notes (Optional)", class: "form-label" %>
+              <%= f.text_area :notes, rows: 3, class: "form-input", placeholder: "Any special requirements or questions?" %>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-lg mb-4">
+              <h4 class="font-semibold mb-2">Selected Time:</h4>
+              <p id="selected-time-display" class="text-lg">Please select a time slot</p>
+            </div>
+
+            <%= f.submit "Review Booking", class: "btn-primary w-full btn-lg" %>
+            <p class="text-sm text-gray-600 text-center mt-3">
+              Review your booking details before confirming
+            </p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  const serviceId = <%= @service.id %>;
+  const availableDates = <%= raw @available_dates.to_json %>;
+
+  function createCalendar() {
+    const calendarGrid = document.getElementById('calendar-grid');
+    const today = new Date();
+
+    for (let i = 0; i < 30; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      const dateStr = date.toISOString().split('T')[0];
+      const hasAvailability = availableDates[dateStr];
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = hasAvailability
+        ? 'p-2 text-center rounded bg-success-50 hover:bg-success-100 cursor-pointer'
+        : 'p-2 text-center rounded bg-gray-100 cursor-not-allowed';
+      button.disabled = !hasAvailability;
+      button.dataset.date = dateStr;
+
+      const weekday = document.createElement('div');
+      weekday.className = 'text-xs text-gray-600';
+      weekday.textContent = date.toLocaleDateString('en-US', {weekday: 'short'});
+
+      const day = document.createElement('div');
+      day.className = 'font-semibold';
+      day.textContent = date.getDate();
+
+      button.appendChild(weekday);
+      button.appendChild(day);
+
+      if (hasAvailability) {
+        button.addEventListener('click', () => loadTimeSlots(dateStr, serviceId));
+      }
+
+      calendarGrid.appendChild(button);
+    }
+  }
+
+  function loadTimeSlots(date, serviceId) {
+    fetch(`/services/${serviceId}/availability?date=${encodeURIComponent(date)}`)
+      .then(response => response.json())
+      .then(slots => {
+        const slotsContainer = document.getElementById('slots-container');
+        const timeSlotsDiv = document.getElementById('time-slots');
+
+        // Clear existing slots using safe DOM manipulation
+        while (slotsContainer.firstChild) {
+          slotsContainer.removeChild(slotsContainer.firstChild);
+        }
+
+        if (slots.length === 0) {
+          const message = document.createElement('p');
+          message.className = 'col-span-full text-center text-gray-500';
+          message.textContent = 'No available slots for this date';
+          slotsContainer.appendChild(message);
+          timeSlotsDiv.classList.remove('hidden');
+          return;
+        }
+
+        slots.forEach(slot => {
+          const startTime = new Date(slot.start_time);
+          const timeStr = startTime.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'time-slot p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 cursor-pointer transition-all';
+          button.textContent = timeStr;
+          button.addEventListener('click', () => selectTimeSlot(slot.start_time, slot.end_time, button));
+
+          slotsContainer.appendChild(button);
+        });
+
+        timeSlotsDiv.classList.remove('hidden');
+      })
+      .catch(error => {
+        console.error('Error loading time slots:', error);
+        const message = document.createElement('p');
+        message.className = 'col-span-full text-center text-red-500';
+        message.textContent = 'Error loading time slots. Please try again.';
+        slotsContainer.appendChild(message);
+      });
+  }
+
+  function selectTimeSlot(startTime, endTime, clickedButton) {
+    document.getElementById('selected-start-time').value = startTime;
+    document.getElementById('selected-end-time').value = endTime;
+
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    const dateStr = start.toLocaleDateString('en-US', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'});
+    const timeStr = `${start.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'})} - ${end.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'})}`;
+
+    document.getElementById('selected-time-display').textContent = `${dateStr} at ${timeStr}`;
+    document.getElementById('booking-form').classList.remove('hidden');
+
+    // Remove selected class from all slots
+    document.querySelectorAll('.time-slot').forEach(slot => {
+      slot.classList.remove('time-slot-selected');
+    });
+
+    // Add selected class to clicked slot
+    clickedButton.classList.add('time-slot-selected');
+  }
+
+  // Initialize calendar on page load
+  document.addEventListener('DOMContentLoaded', createCalendar);
+})();
+</script>

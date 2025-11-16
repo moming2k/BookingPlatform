@@ -1,0 +1,159 @@
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900">My Bookings</h1>
+      <p class="text-gray-600 mt-2">View and manage your service bookings</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="mb-6">
+      <nav class="flex space-x-2 bg-gray-100 p-1 rounded-lg">
+        <a href="#" class="tab-link active" data-tab="upcoming">
+          <span class="tab-label">Upcoming</span>
+          <span class="tab-count"><%= @upcoming_bookings.total_count %></span>
+        </a>
+        <a href="#" class="tab-link" data-tab="past">
+          <span class="tab-label">Past</span>
+          <span class="tab-count"><%= @past_bookings.total_count %></span>
+        </a>
+        <a href="#" class="tab-link" data-tab="cancelled">
+          <span class="tab-label">Cancelled</span>
+          <span class="tab-count"><%= @cancelled_bookings.total_count %></span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Upcoming Bookings Tab -->
+    <div id="upcoming-tab" class="tab-content">
+      <% if @upcoming_bookings.any? %>
+        <div class="space-y-4">
+          <%= render partial: 'booking_card', collection: @upcoming_bookings, as: :booking %>
+        </div>
+        <% if @upcoming_bookings.total_pages > 1 %>
+          <div class="mt-8 flex justify-center">
+            <%= paginate @upcoming_bookings, param_name: :page %>
+          </div>
+        <% end %>
+      <% else %>
+        <%= render 'empty_state', message: 'No upcoming bookings', description: 'You don\'t have any upcoming bookings.' %>
+      <% end %>
+    </div>
+
+    <!-- Past Bookings Tab -->
+    <div id="past-tab" class="tab-content hidden">
+      <% if @past_bookings.any? %>
+        <div class="space-y-4">
+          <%= render partial: 'booking_card', collection: @past_bookings, as: :booking %>
+        </div>
+        <% if @past_bookings.total_pages > 1 %>
+          <div class="mt-8 flex justify-center">
+            <%= paginate @past_bookings, param_name: :past_page %>
+          </div>
+        <% end %>
+      <% else %>
+        <%= render 'empty_state', message: 'No past bookings', description: 'You don\'t have any past bookings yet.' %>
+      <% end %>
+    </div>
+
+    <!-- Cancelled Bookings Tab -->
+    <div id="cancelled-tab" class="tab-content hidden">
+      <% if @cancelled_bookings.any? %>
+        <div class="space-y-4">
+          <%= render partial: 'booking_card', collection: @cancelled_bookings, as: :booking %>
+        </div>
+        <% if @cancelled_bookings.total_pages > 1 %>
+          <div class="mt-8 flex justify-center">
+            <%= paginate @cancelled_bookings, param_name: :cancelled_page %>
+          </div>
+        <% end %>
+      <% else %>
+        <%= render 'empty_state', message: 'No cancelled bookings', description: 'You don\'t have any cancelled bookings.' %>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Tab switching functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const tabLinks = document.querySelectorAll('.tab-link');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabLinks.forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        const targetTab = this.getAttribute('data-tab');
+
+        // Remove active class from all tabs
+        tabLinks.forEach(tab => {
+          tab.classList.remove('active');
+        });
+
+        // Add active class to clicked tab
+        this.classList.add('active');
+
+        // Hide all tab contents
+        tabContents.forEach(content => {
+          content.classList.add('hidden');
+        });
+
+        // Show target tab content
+        document.getElementById(targetTab + '-tab').classList.remove('hidden');
+      });
+    });
+  });
+</script>
+
+<style>
+  .tab-link {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: #6b7280;
+    background-color: transparent;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .tab-link:hover {
+    color: #374151;
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+
+  .tab-link.active {
+    color: #1f2937;
+    background-color: white;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+
+  .tab-label {
+    font-weight: 500;
+  }
+
+  .tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    background-color: #f3f4f6;
+    border-radius: 9999px;
+    min-width: 1.5rem;
+  }
+
+  .tab-link.active .tab-count {
+    color: #059669;
+    background-color: #d1fae5;
+  }
+</style>

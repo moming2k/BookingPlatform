@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= content_for(:title) || "Booking Platform" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description" content="<%= content_for(:description) || 'Book appointments online with ease' %>">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <!-- Tailwind CSS -->
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+
+    <!-- Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  </head>
+
+  <body class="min-h-screen bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex">
+            <!-- Logo -->
+            <div class="flex-shrink-0 flex items-center">
+              <%= link_to root_path, class: "text-xl font-bold text-primary-600" do %>
+                Booking Platform
+              <% end %>
+            </div>
+
+            <!-- Main Navigation -->
+            <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+              <%= link_to "Services", services_path,
+                  class: "inline-flex items-center px-1 pt-1 text-sm font-medium #{current_page?(services_path) ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-gray-700'}" %>
+
+              <% if user_signed_in? %>
+                <%= link_to "My Bookings", bookings_path,
+                    class: "inline-flex items-center px-1 pt-1 text-sm font-medium #{current_page?(bookings_path) ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-gray-700'}" %>
+
+                <%= link_to "Calendar", calendar_path,
+                    class: "inline-flex items-center px-1 pt-1 text-sm font-medium #{current_page?(calendar_path) ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-gray-700'}" %>
+
+                <% if current_user.admin? %>
+                  <%= link_to "Admin", admin_dashboard_path,
+                      class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-danger-600 hover:text-danger-700" %>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Right Navigation -->
+          <div class="hidden sm:ml-6 sm:flex sm:items-center">
+            <% if user_signed_in? %>
+              <!-- User dropdown -->
+              <div class="ml-3 relative" data-controller="dropdown">
+                <button type="button"
+                        class="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                        data-action="click->dropdown#toggle">
+                  <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-primary-500 text-white">
+                    <%= current_user.initials %>
+                  </span>
+                </button>
+
+                <div class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5"
+                     data-dropdown-target="menu">
+                  <div class="px-4 py-2 text-sm text-gray-700 border-b">
+                    <%= current_user.display_name %>
+                    <div class="text-xs text-gray-500"><%= current_user.email %></div>
+                  </div>
+
+                  <%= link_to "Profile", profile_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                  <%= link_to "Settings", edit_profile_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                  <hr class="my-1">
+                  <%= button_to "Sign Out", logout_path, method: :delete,
+                      class: "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                </div>
+              </div>
+            <% else %>
+              <%= link_to "Sign In", login_path, class: "btn-primary" %>
+            <% end %>
+          </div>
+
+          <!-- Mobile menu button -->
+          <div class="flex items-center sm:hidden">
+            <button type="button"
+                    class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+                    data-controller="mobile-menu"
+                    data-action="click->mobile-menu#toggle">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile menu -->
+      <div class="hidden sm:hidden" data-mobile-menu-target="menu">
+        <div class="pt-2 pb-3 space-y-1">
+          <%= link_to "Services", services_path, class: "block pl-3 pr-4 py-2 text-base font-medium #{current_page?(services_path) ? 'text-primary-600 bg-primary-50 border-l-4 border-primary-600' : 'text-gray-500'}" %>
+
+          <% if user_signed_in? %>
+            <%= link_to "My Bookings", bookings_path, class: "block pl-3 pr-4 py-2 text-base font-medium #{current_page?(bookings_path) ? 'text-primary-600 bg-primary-50 border-l-4 border-primary-600' : 'text-gray-500'}" %>
+            <%= link_to "Calendar", calendar_path, class: "block pl-3 pr-4 py-2 text-base font-medium #{current_page?(calendar_path) ? 'text-primary-600 bg-primary-50 border-l-4 border-primary-600' : 'text-gray-500'}" %>
+
+            <% if current_user.admin? %>
+              <%= link_to "Admin Dashboard", admin_dashboard_path, class: "block pl-3 pr-4 py-2 text-base font-medium text-danger-600" %>
+            <% end %>
+
+            <hr class="my-2">
+            <%= link_to "Profile", profile_path, class: "block pl-3 pr-4 py-2 text-base font-medium text-gray-500" %>
+            <%= button_to "Sign Out", logout_path, method: :delete, class: "block w-full text-left pl-3 pr-4 py-2 text-base font-medium text-gray-500" %>
+          <% else %>
+            <%= link_to "Sign In", login_path, class: "block pl-3 pr-4 py-2 text-base font-medium text-primary-600" %>
+          <% end %>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Flash messages -->
+    <% if notice.present? %>
+      <div class="alert alert-success mx-4 mt-4" data-controller="alert">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-success-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm"><%= notice %></p>
+          </div>
+          <button type="button" class="ml-auto" data-action="click->alert#close">
+            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    <% end %>
+
+    <% if alert.present? %>
+      <div class="alert alert-danger mx-4 mt-4" data-controller="alert">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-danger-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm"><%= alert %></p>
+          </div>
+          <button type="button" class="ml-auto" data-action="click->alert#close">
+            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Main content -->
+    <main>
+      <%= yield %>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white mt-auto border-t border-gray-200">
+      <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div class="md:flex md:items-center md:justify-between">
+          <div class="flex justify-center md:order-2">
+            <%= link_to "About", about_path, class: "text-gray-400 hover:text-gray-500 px-3" %>
+            <%= link_to "Pricing", pricing_path, class: "text-gray-400 hover:text-gray-500 px-3" %>
+            <%= link_to "Contact", contact_path, class: "text-gray-400 hover:text-gray-500 px-3" %>
+            <%= link_to "Terms", terms_path, class: "text-gray-400 hover:text-gray-500 px-3" %>
+            <%= link_to "Privacy", privacy_path, class: "text-gray-400 hover:text-gray-500 px-3" %>
+          </div>
+          <div class="mt-8 md:mt-0 md:order-1">
+            <p class="text-center text-base text-gray-400">
+              &copy; <%= Date.current.year %> Booking Platform. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,82 @@
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+  <div class="p-6">
+    <div class="flex items-start justify-between">
+      <div class="flex-1">
+        <!-- Service Name & Status -->
+        <div class="flex items-center gap-3 mb-3">
+          <h3 class="text-xl font-semibold text-gray-900">
+            <%= booking.service.name %>
+          </h3>
+          <% case booking.status %>
+          <% when 'confirmed' %>
+            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Confirmed</span>
+          <% when 'pending' %>
+            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Pending Payment</span>
+          <% when 'cancelled' %>
+            <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Cancelled</span>
+          <% when 'completed' %>
+            <span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">Completed</span>
+          <% end %>
+        </div>
+
+        <!-- Booking Reference -->
+        <p class="text-sm text-gray-500 mb-4">
+          Reference: <span class="font-mono"><%= booking.booking_reference %></span>
+        </p>
+
+        <!-- Date & Time Info -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+          <div class="flex items-center text-gray-600">
+            <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <span class="text-sm">
+              <%= booking.start_time.strftime("%b %d, %Y") %>
+            </span>
+          </div>
+
+          <div class="flex items-center text-gray-600">
+            <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="text-sm">
+              <%= booking.start_time.strftime("%I:%M %p") %> - <%= booking.end_time.strftime("%I:%M %p") %>
+            </span>
+          </div>
+
+          <div class="flex items-center text-gray-600">
+            <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="text-sm font-semibold">
+              $<%= booking.amount %>
+            </span>
+          </div>
+        </div>
+
+        <!-- Notes Preview -->
+        <% if booking.notes.present? %>
+          <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+            <span class="font-semibold">Notes:</span> <%= booking.notes.truncate(100) %>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Actions -->
+      <div class="ml-6 flex flex-col gap-2">
+        <%= link_to "View Details", booking_path(booking), class: "btn-primary text-center whitespace-nowrap" %>
+
+        <% if booking.status == 'pending' && booking.payment.present? %>
+          <%= link_to "Pay Now", booking_payment_path(booking), class: "btn-outline text-center whitespace-nowrap" %>
+        <% end %>
+
+        <% if booking.status != 'cancelled' && booking.start_time > Time.current %>
+          <%= button_to "Cancel", cancel_booking_path(booking),
+              method: :patch,
+              class: "btn-outline text-red-600 border-red-300 hover:bg-red-50 text-center whitespace-nowrap text-sm",
+              data: { confirm: "Are you sure you want to cancel this booking?" } %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

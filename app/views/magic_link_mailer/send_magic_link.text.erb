@@ -1,0 +1,15 @@
+Booking Platform - Your Sign-in Link
+=====================================
+
+Hello <%= @user.name || @user.email %>,
+
+Click the link below to sign in to your account. This link will expire in 15 minutes.
+
+<%= @magic_link_url %>
+
+This link expires at <%= @expiry_time.strftime("%I:%M %p on %B %d, %Y") %>
+
+If you didn't request this email, you can safely ignore it.
+
+---
+© <%= Date.current.year %> Booking Platform. All rights reserved.
