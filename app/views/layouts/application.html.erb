@@ -54,17 +54,17 @@
           <div class="hidden sm:ml-6 sm:flex sm:items-center">
             <% if user_signed_in? %>
               <!-- User dropdown -->
-              <div class="ml-3 relative" data-controller="dropdown">
+              <div class="ml-3 relative" id="user-menu-container">
                 <button type="button"
-                        class="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                        data-action="click->dropdown#toggle">
+                        id="user-menu-button"
+                        class="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                   <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-primary-500 text-white">
                     <%= current_user.initials %>
                   </span>
                 </button>
 
-                <div class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5"
-                     data-dropdown-target="menu">
+                <div id="user-menu-dropdown"
+                     class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 z-50">
                   <div class="px-4 py-2 text-sm text-gray-700 border-b">
                     <%= current_user.display_name %>
                     <div class="text-xs text-gray-500"><%= current_user.email %></div>
@@ -85,9 +85,8 @@
           <!-- Mobile menu button -->
           <div class="flex items-center sm:hidden">
             <button type="button"
-                    class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
-                    data-controller="mobile-menu"
-                    data-action="click->mobile-menu#toggle">
+                    id="mobile-menu-button"
+                    class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100">
               <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
@@ -97,7 +96,7 @@
       </div>
 
       <!-- Mobile menu -->
-      <div class="hidden sm:hidden" data-mobile-menu-target="menu">
+      <div id="mobile-menu" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
           <%= link_to "Services", services_path, class: "block pl-3 pr-4 py-2 text-base font-medium #{current_page?(services_path) ? 'text-primary-600 bg-primary-50 border-l-4 border-primary-600' : 'text-gray-500'}" %>
 
@@ -184,5 +183,40 @@
         </div>
       </div>
     </footer>
+
+    <script>
+      // User menu dropdown and mobile menu
+      document.addEventListener('DOMContentLoaded', function() {
+        // Desktop user menu dropdown
+        const button = document.getElementById('user-menu-button');
+        const dropdown = document.getElementById('user-menu-dropdown');
+
+        if (button && dropdown) {
+          button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdown.classList.toggle('hidden');
+          });
+
+          // Close dropdown when clicking outside
+          document.addEventListener('click', function(e) {
+            const container = document.getElementById('user-menu-container');
+            if (container && !container.contains(e.target)) {
+              dropdown.classList.add('hidden');
+            }
+          });
+        }
+
+        // Mobile menu toggle
+        const mobileButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        if (mobileButton && mobileMenu) {
+          mobileButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            mobileMenu.classList.toggle('hidden');
+          });
+        }
+      });
+    </script>
   </body>
 </html>
