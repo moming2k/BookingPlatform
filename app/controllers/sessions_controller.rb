@@ -40,9 +40,6 @@ class SessionsController < ApplicationController
       flash.now[:alert] = "Please enter a valid email address."
       render :new
     end
-  rescue ActiveRecord::RecordNotUnique
-    # Handle race condition where user was created between find and create
-    retry
   end
 
   def magic_link

@@ -19,7 +19,7 @@ class User < ApplicationRecord
 
   # Callbacks
   before_validation :normalize_email
-  before_create :ensure_stripe_customer
+  after_create :ensure_stripe_customer
 
   # Magic Link Authentication
   def generate_magic_link!
@@ -129,8 +129,15 @@ class User < ApplicationRecord
     # Skip Stripe customer creation in test environment or for test users
     return if Rails.env.test?
     return if email.present? && email.match?(/@example\.(com|org)$/)
+    return if stripe_customer_id.present?
 
-    create_or_update_stripe_customer! unless stripe_customer_id.present?
+    customer = Stripe::Customer.create(
+      email: email,
+      name: name,
+      phone: phone,
+      metadata: { user_id: id }
+    )
+    update_column(:stripe_customer_id, customer.id)
   rescue => e
     Rails.logger.error "Failed to ensure Stripe customer: #{e.message}"
   end
