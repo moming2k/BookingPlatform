@@ -5,22 +5,24 @@ export default class extends Controller {
 
   toggle(event) {
     event.preventDefault()
+    event.stopPropagation()
     this.menuTarget.classList.toggle("hidden")
   }
 
   hide(event) {
-    if (!this.element.contains(event.target)) {
-      this.menuTarget.classList.add("hidden")
+    if (this.element.contains(event.target)) {
+      return
     }
+    this.menuTarget.classList.add("hidden")
   }
 
   connect() {
     // Close dropdown when clicking outside
-    this.boundHide = this.hide.bind(this)
-    document.addEventListener("click", this.boundHide)
+    this.hideHandler = this.hide.bind(this)
+    document.addEventListener("click", this.hideHandler)
   }
 
   disconnect() {
-    document.removeEventListener("click", this.boundHide)
+    document.removeEventListener("click", this.hideHandler)
   }
 }
