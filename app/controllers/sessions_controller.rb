@@ -10,9 +10,22 @@ class SessionsController < ApplicationController
     email = params[:email]&.downcase&.strip
 
     if email.present? && valid_email?(email)
-      user = User.find_or_create_by(email: email) do |u|
-        u.name = params[:name] if params[:name].present?
+      # Handle soft-deleted users (acts_as_paranoid)
+      # First try to find without paranoid scope
+      user = User.with_deleted.find_by(email: email)
+
+      if user&.deleted?
+        # Restore soft-deleted user
+        user.restore
+        user.update(name: params[:name]) if params[:name].present?
+      elsif user.nil?
+        # Create new user
+        user = User.create(
+          email: email,
+          name: params[:name]
+        )
       end
+      # else: user exists and is active, use it
 
       if user.persisted?
         user.generate_magic_link!
@@ -20,7 +33,7 @@ class SessionsController < ApplicationController
 
         redirect_to login_path, notice: "Check your email for a magic link to sign in."
       else
-        flash.now[:alert] = "There was an error creating your account. Please try again."
+        flash.now[:alert] = "There was an error: #{user.errors.full_messages.join(', ')}"
         render :new
       end
     else
