@@ -10,7 +10,9 @@ class ApplicationController < ActionController::Base
   helper_method :current_user, :user_signed_in?
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
-  rescue_from ActiveRecord::RecordNotFound, with: :not_found
+  rescue_from ActiveRecord::RecordNotFound do |exception|
+    not_found(exception)
+  end
 
   private
 
@@ -57,8 +59,25 @@ class ApplicationController < ActionController::Base
     redirect_back(fallback_location: root_path)
   end
 
-  def not_found
-    flash[:alert] = "The requested resource was not found."
+  def not_found(exception = nil)
+    if Rails.env.development?
+      # Detailed error message for development
+      details = []
+      details << "Path: #{request.method} #{request.fullpath}"
+      details << "Exception: #{exception.message}" if exception
+      details << "Params: #{params.inspect}" if params.present?
+
+      flash[:alert] = "Resource not found. #{details.join(' | ')}"
+      Rails.logger.debug "=== RecordNotFound Exception ==="
+      Rails.logger.debug "Path: #{request.method} #{request.fullpath}"
+      Rails.logger.debug "Exception: #{exception.inspect}"
+      Rails.logger.debug "Params: #{params.inspect}"
+      Rails.logger.debug "=== End RecordNotFound ==="
+    else
+      # Simple message for production
+      flash[:alert] = "The requested resource was not found."
+    end
+
     redirect_back(fallback_location: root_path)
   end
 
