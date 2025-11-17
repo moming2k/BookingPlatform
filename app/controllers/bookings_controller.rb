@@ -46,8 +46,13 @@ class BookingsController < ApplicationController
       return
     end
 
-    # If already succeeded, return immediately
+    # If already succeeded, ensure booking is also confirmed
     if payment.succeeded?
+      # Double-check booking status is correct
+      if @booking.status != 'confirmed'
+        @booking.update!(status: 'confirmed')
+      end
+
       render json: {
         status: 'succeeded',
         message: 'Payment successful! Your booking is confirmed.'
@@ -257,10 +262,21 @@ class BookingsController < ApplicationController
 
     if @booking.can_cancel?
       reason = params[:cancellation_reason] || "Cancelled by user"
+      had_payment = @booking.payment&.succeeded?
+      was_refundable = @booking.free_cancellation_available?
 
       if @booking.cancel!(current_user, reason)
         log_activity("booking_cancelled", @booking, { reason: reason })
-        redirect_to bookings_path, notice: "Booking successfully cancelled."
+
+        # Build detailed cancellation message
+        notice_message = "Your booking has been successfully cancelled."
+        if had_payment && was_refundable
+          notice_message += " A full refund of $#{@booking.amount} will be credited to the original payment method within 5-10 business days."
+        elsif had_payment && !was_refundable
+          notice_message += " No refund will be issued as this cancellation was made after the free cancellation period."
+        end
+
+        redirect_to @booking, notice: notice_message
       else
         redirect_to @booking, alert: "Unable to cancel booking. Please contact support."
       end

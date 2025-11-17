@@ -115,7 +115,8 @@ class Payment < ApplicationRecord
         stripe_response: stripe_response.merge(refund: refund.to_h)
       )
 
-      send_refund_email
+      # TODO: Implement PaymentMailer for refund notifications
+      # send_refund_email
       true
     rescue Stripe::StripeError => e
       handle_stripe_error(e)
@@ -271,7 +272,8 @@ class Payment < ApplicationRecord
         stripe_response: stripe_response.merge(payment_intent: payment_intent.to_h)
       )
       booking.confirm!
-      send_receipt_email
+      # TODO: Implement PaymentMailer for receipt notifications
+      # send_receipt_email
     when "requires_action", "requires_source_action"
       update!(
         status: "processing",
@@ -297,7 +299,8 @@ class Payment < ApplicationRecord
       failure_reason: error.message,
       stripe_response: stripe_response.merge(error: { message: error.message, type: error.class.name })
     )
-    send_failure_email
+    # TODO: Implement PaymentMailer for failure notifications
+    # send_failure_email
   end
 
   def handle_status_change

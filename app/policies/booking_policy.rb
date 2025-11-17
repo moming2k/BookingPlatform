@@ -28,7 +28,7 @@ class BookingPolicy < ApplicationPolicy
   end
 
   def cancel?
-    user_owns_booking? && record.can_be_cancelled?
+    user_owns_booking? && record.can_cancel?
   end
 
   def confirm?

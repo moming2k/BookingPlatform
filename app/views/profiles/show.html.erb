@@ -1,0 +1,66 @@
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-gray-900">My Profile</h1>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div class="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+        <h2 class="text-xl font-bold text-gray-900">Profile Information</h2>
+        <%= link_to "Edit Profile", edit_profile_path, class: "btn-outline" %>
+      </div>
+
+      <div class="px-6 py-6">
+        <dl class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div>
+            <dt class="text-sm font-medium text-gray-600">Name</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= @user.name || "Not set" %></dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-600">Email</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= @user.email %></dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-600">Phone</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= @user.phone || "Not set" %></dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-600">Member Since</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= @user.created_at.strftime("%B %Y") %></dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Links</h3>
+        <div class="space-y-3">
+          <%= link_to bookings_path, class: "flex items-center text-primary-600 hover:text-primary-700" do %>
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            My Bookings
+          <% end %>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Account Statistics</h3>
+        <dl class="space-y-3">
+          <div class="flex justify-between">
+            <dt class="text-sm text-gray-600">Total Bookings</dt>
+            <dd class="text-sm font-semibold text-gray-900"><%= @user.bookings.count %></dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-sm text-gray-600">Upcoming Bookings</dt>
+            <dd class="text-sm font-semibold text-gray-900"><%= @user.bookings.upcoming.count %></dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>

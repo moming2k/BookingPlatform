@@ -38,9 +38,16 @@
             <svg class="w-6 h-6 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            <div>
+            <div class="flex-1">
               <h3 class="font-semibold text-red-900">Booking Cancelled</h3>
-              <p class="text-sm text-red-700">This booking has been cancelled</p>
+              <p class="text-sm text-red-700">
+                Cancelled on <%= @booking.cancelled_at.strftime("%B %d, %Y at %I:%M %p") %>
+              </p>
+              <% if @booking.payment&.refunded? %>
+                <p class="text-sm text-gray-700 mt-2">
+                  <strong>Refund:</strong> $<%= @booking.payment.refund_amount %> has been refunded to your original payment method. Please allow 5-10 business days for the refund to appear in your account.
+                </p>
+              <% end %>
             </div>
           </div>
         </div>
@@ -92,7 +99,7 @@
             </div>
 
             <!-- Duration & Price -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 pb-4 border-t border-gray-200">
               <div class="flex justify-between items-center">
                 <span class="text-gray-600">Duration</span>
                 <span class="font-semibold text-gray-900"><%= @booking.service.duration_minutes %> minutes</span>
@@ -106,7 +113,7 @@
 
             <!-- Notes -->
             <% if @booking.notes.present? %>
-              <div class="pt-4 border-t border-gray-200">
+              <div class="pt-4 pb-4 border-t border-gray-200">
                 <h4 class="font-semibold text-gray-900 mb-2">Additional Notes</h4>
                 <p class="text-gray-700 bg-gray-50 p-3 rounded"><%= @booking.notes %></p>
               </div>
@@ -122,7 +129,7 @@
             </div>
 
             <div class="px-6 py-6">
-              <div class="space-y-3">
+              <div class="space-y-4 mb-2">
                 <div class="flex justify-between">
                   <span class="text-gray-600">Status</span>
                   <% case @booking.payment.status %>
@@ -132,6 +139,10 @@
                     <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">Pending</span>
                   <% when 'failed' %>
                     <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">Failed</span>
+                  <% when 'refunded' %>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">Refunded</span>
+                  <% when 'partially_refunded' %>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">Partially Refunded</span>
                   <% end %>
                 </div>
 
@@ -151,6 +162,42 @@
               </div>
             </div>
           </div>
+
+          <!-- Refund Information Card (only if refunded) -->
+          <% if @booking.payment.refunded? %>
+            <div class="bg-white rounded-lg shadow-sm border border-purple-200">
+              <div class="border-b border-purple-200 px-6 py-4 bg-purple-50">
+                <h2 class="text-xl font-bold text-purple-900">Refund Information</h2>
+              </div>
+
+              <div class="px-6 pt-6 pb-8">
+                <div class="space-y-3">
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Refund Amount</span>
+                    <span class="font-semibold text-purple-900">$<%= @booking.payment.refund_amount %></span>
+                  </div>
+
+                  <% if @booking.payment.refunded_at.present? %>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">Refunded At</span>
+                      <span class="font-semibold text-gray-900">
+                        <%= @booking.payment.refunded_at.strftime("%B %d, %Y at %I:%M %p") %>
+                      </span>
+                    </div>
+                  <% end %>
+
+                  <div class="mt-4 mb-2 p-3 bg-purple-50 rounded-lg border border-purple-100">
+                    <p class="text-sm text-purple-800">
+                      <svg class="inline w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                      </svg>
+                      The refund has been processed to your original payment method. Please allow 5-10 business days for the refund to appear in your account.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
         <% end %>
       </div>
 
@@ -171,10 +218,37 @@
             <% end %>
 
             <% if @booking.status != 'cancelled' && @booking.start_time > Time.current %>
+              <% if @booking.payment&.succeeded? %>
+                <div class="mb-3 p-3 bg-gray-50 rounded-lg text-xs">
+                  <div class="font-semibold text-gray-700 mb-1">Cancellation Policy</div>
+                  <% if @booking.free_cancellation_available? %>
+                    <div class="text-green-700">
+                      Free cancellation until <%= @booking.cancellation_deadline.strftime("%b %d at %I:%M %p") %>
+                    </div>
+                  <% else %>
+                    <div class="text-red-700">
+                      Past free cancellation deadline - no refund available
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+
+              <%
+                refund_message = if @booking.payment&.succeeded?
+                  if @booking.free_cancellation_available?
+                    "You will receive a full refund."
+                  else
+                    "No refund will be issued (past cancellation deadline)."
+                  end
+                else
+                  ""
+                end
+                confirm_message = "Are you sure you want to cancel this booking? #{refund_message}"
+              %>
               <%= button_to "Cancel Booking", cancel_booking_path(@booking),
                   method: :patch,
                   class: "btn-outline w-full text-red-600 border-red-300 hover:bg-red-50",
-                  data: { confirm: "Are you sure you want to cancel this booking?" } %>
+                  data: { confirm: confirm_message } %>
             <% end %>
 
             <div class="pt-4 border-t border-gray-200">

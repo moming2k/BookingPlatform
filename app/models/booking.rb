@@ -77,7 +77,18 @@ class Booking < ApplicationRecord
         cancelled_by: user,
         cancellation_reason: reason
       )
-      payment&.refund! if payment&.succeeded?
+
+      # Process refund if payment succeeded
+      if payment&.succeeded?
+        if free_cancellation_available?
+          # Full refund if cancelled before deadline
+          payment.refund!
+        else
+          # No refund if cancelled after deadline
+          Rails.logger.info "Booking #{id} cancelled after deadline - no refund issued"
+        end
+      end
+
       send_cancellation_email
     end
     true
