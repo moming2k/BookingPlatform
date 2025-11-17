@@ -301,15 +301,16 @@ class Payment < ApplicationRecord
   end
 
   def handle_status_change
-    if saved_change_to_status?
-      case status
-      when "succeeded"
-        PaymentSucceededJob.perform_later(self)
-      when "failed"
-        PaymentFailedJob.perform_later(self)
-      when "refunded", "partially_refunded"
-        PaymentRefundedJob.perform_later(self)
-      end
-    end
+    # TODO: Implement background jobs for payment status changes
+    # if saved_change_to_status?
+    #   case status
+    #   when "succeeded"
+    #     PaymentSucceededJob.perform_later(self)
+    #   when "failed"
+    #     PaymentFailedJob.perform_later(self)
+    #   when "refunded", "partially_refunded"
+    #     PaymentRefundedJob.perform_later(self)
+    #   end
+    # end
   end
 end

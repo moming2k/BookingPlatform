@@ -188,3 +188,202 @@
     </div>
   </div>
 </div>
+
+<% if @is_payment_redirect %>
+<script>
+  // Payment status polling when redirected from Stripe
+  (function() {
+    const statusBanner = document.querySelector('.bg-yellow-50');
+    const pollInterval = 2000; // Poll every 2 seconds
+    const maxAttempts = 30; // Max 60 seconds of polling
+    let attempts = 0;
+    let polling = false;
+    let pollTimer = null;
+    let paymentCompleted = false; // Track if payment has been completed
+
+    // Helper to create status banner content
+    function createStatusBanner(iconSvg, titleText, messageText, colorClasses) {
+      const container = document.createElement('div');
+      container.className = 'flex items-center';
+
+      const iconWrapper = document.createElement('div');
+      iconWrapper.className = 'mr-3';
+      iconWrapper.innerHTML = iconSvg;
+
+      const textContainer = document.createElement('div');
+
+      const title = document.createElement('h3');
+      title.className = `font-semibold ${colorClasses.title}`;
+      title.textContent = titleText;
+
+      const message = document.createElement('p');
+      message.className = `text-sm ${colorClasses.message}`;
+      message.textContent = messageText;
+
+      textContainer.appendChild(title);
+      textContainer.appendChild(message);
+      container.appendChild(iconWrapper);
+      container.appendChild(textContainer);
+
+      return container;
+    }
+
+    // Show processing state
+    function showProcessingState() {
+      if (statusBanner) {
+        const iconSvg = '<svg class="animate-spin w-6 h-6 text-blue-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+
+        statusBanner.innerHTML = '';
+        statusBanner.appendChild(createStatusBanner(
+          iconSvg,
+          'Processing Payment...',
+          'Please wait while we verify your payment with Stripe',
+          { title: 'text-blue-900', message: 'text-blue-700' }
+        ));
+        statusBanner.className = 'bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6';
+      }
+    }
+
+    // Show success state
+    function showSuccessState(message) {
+      // Mark payment as completed
+      paymentCompleted = true;
+
+      // Stop polling immediately
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+
+      if (statusBanner) {
+        const iconSvg = '<svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+
+        statusBanner.innerHTML = '';
+        statusBanner.appendChild(createStatusBanner(
+          iconSvg,
+          'Payment Successful!',
+          message,
+          { title: 'text-green-900', message: 'text-green-700' }
+        ));
+        statusBanner.className = 'bg-green-50 border border-green-200 rounded-lg p-4 mb-6';
+      }
+
+      // Redirect to clean URL after 2 seconds (remove payment parameters)
+      setTimeout(() => {
+        window.location.href = '<%= booking_path(@booking) %>';
+      }, 2000);
+    }
+
+    // Show error state
+    function showErrorState(message) {
+      // Mark payment as completed (even if failed)
+      paymentCompleted = true;
+
+      // Stop polling immediately
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+
+      if (statusBanner) {
+        const iconSvg = '<svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+
+        statusBanner.innerHTML = '';
+        statusBanner.appendChild(createStatusBanner(
+          iconSvg,
+          'Payment Verification Error',
+          message,
+          { title: 'text-red-900', message: 'text-red-700' }
+        ));
+        statusBanner.className = 'bg-red-50 border border-red-200 rounded-lg p-4 mb-6';
+      }
+    }
+
+    // Poll payment status
+    async function checkPaymentStatus() {
+      // If payment already completed, stop immediately
+      if (paymentCompleted) return true;
+
+      // Prevent concurrent requests
+      if (polling) return true; // Return true to stop polling if already checking
+      polling = true;
+
+      try {
+        const response = await fetch('<%= check_payment_status_booking_path(@booking) %>', {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+
+        switch(data.status) {
+          case 'succeeded':
+            showSuccessState(data.message);
+            return true; // Stop polling
+
+          case 'failed':
+            showErrorState(data.message);
+            return true; // Stop polling
+
+          case 'processing':
+          case 'pending':
+            // Continue polling
+            return false;
+
+          case 'error':
+            showErrorState(data.message);
+            return true; // Stop polling
+
+          default:
+            return false; // Continue polling
+        }
+      } catch (error) {
+        console.error('Payment status check failed:', error);
+
+        // Show error if we've exhausted attempts
+        if (attempts >= maxAttempts) {
+          showErrorState('Unable to verify payment status. Please refresh the page.');
+          return true; // Stop polling
+        }
+
+        return false; // Continue polling on error
+      } finally {
+        polling = false;
+      }
+    }
+
+    // Start polling
+    showProcessingState();
+
+    pollTimer = setInterval(async () => {
+      attempts++;
+
+      const shouldStop = await checkPaymentStatus();
+
+      if (shouldStop || attempts >= maxAttempts) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+
+        if (attempts >= maxAttempts && !shouldStop) {
+          showErrorState('Payment verification timed out. Please refresh the page to check status.');
+        }
+      }
+    }, pollInterval);
+
+    // Check immediately on page load
+    checkPaymentStatus().then(shouldStop => {
+      if (shouldStop && pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+    });
+  })();
+</script>
+<% end %>

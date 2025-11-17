@@ -238,16 +238,17 @@ class Booking < ApplicationRecord
   end
 
   def handle_status_change
-    if saved_change_to_status?
-      case status
-      when "confirmed"
-        BookingConfirmedJob.perform_later(self)
-      when "cancelled"
-        BookingCancelledJob.perform_later(self)
-      when "completed"
-        BookingCompletedJob.perform_later(self)
-      end
-    end
+    # TODO: Implement background jobs for booking status changes
+    # if saved_change_to_status?
+    #   case status
+    #   when "confirmed"
+    #     BookingConfirmedJob.perform_later(self)
+    #   when "cancelled"
+    #     BookingCancelledJob.perform_later(self)
+    #   when "completed"
+    #     BookingCompletedJob.perform_later(self)
+    #   end
+    # end
   end
 
   def end_time_after_start_time

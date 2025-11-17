@@ -1,7 +1,7 @@
 class BookingsController < ApplicationController
   skip_before_action :authenticate_user!, only: [:new, :availability, :calendar, :select_time, :review, :create_guest_booking]
-  before_action :set_booking, only: [:show, :cancel, :reschedule, :receipt]
-  before_action :set_service, only: [:new, :create, :availability, :select_time]
+  before_action :set_booking, only: [:show, :cancel, :reschedule, :receipt, :check_payment_status]
+  before_action :set_service, only: [:new, :availability, :select_time]
 
   def index
     @upcoming_bookings = current_user.bookings
@@ -30,6 +30,78 @@ class BookingsController < ApplicationController
 
   def show
     authorize @booking
+
+    # Check if this is a payment redirect - don't trust the redirect_status, we'll poll instead
+    @payment_intent_id = params[:payment_intent]
+    @is_payment_redirect = @payment_intent_id.present?
+  end
+
+  def check_payment_status
+    authorize @booking
+
+    payment = @booking.payment
+
+    if payment.nil?
+      render json: { status: 'no_payment' }, status: :not_found
+      return
+    end
+
+    # If already succeeded, return immediately
+    if payment.succeeded?
+      render json: {
+        status: 'succeeded',
+        message: 'Payment successful! Your booking is confirmed.'
+      }
+      return
+    end
+
+    # Poll Stripe API for the actual status
+    if payment.stripe_payment_intent_id.present?
+      begin
+        intent = Stripe::PaymentIntent.retrieve(payment.stripe_payment_intent_id)
+
+        case intent.status
+        when 'succeeded'
+          payment.update!(
+            status: 'succeeded',
+            paid_at: Time.current,
+            stripe_charge_id: intent.latest_charge
+          )
+          @booking.update!(status: 'confirmed')
+
+          render json: {
+            status: 'succeeded',
+            message: 'Payment successful! Your booking is confirmed.'
+          }
+        when 'processing'
+          render json: {
+            status: 'processing',
+            message: 'Payment is being processed...'
+          }
+        when 'requires_payment_method', 'requires_confirmation', 'requires_action'
+          render json: {
+            status: 'pending',
+            message: 'Payment requires additional action.'
+          }
+        else
+          render json: {
+            status: 'failed',
+            message: 'Payment failed. Please try again.'
+          }
+        end
+      rescue Stripe::StripeError => e
+        Rails.logger.error "Failed to check payment status: #{e.message}"
+        render json: {
+          status: 'error',
+          message: 'Unable to verify payment status. Please refresh the page.'
+        }, status: :service_unavailable
+      end
+    else
+      render json: {
+        status: 'pending',
+        message: 'Waiting for payment...'
+      }
+    end
   end
 
   def new
@@ -274,5 +346,31 @@ class BookingsController < ApplicationController
     end
 
     available_days
+  end
+
+  def handle_payment_success
+    payment = @booking.payment
+    return unless payment&.pending?
+
+    begin
+      # Retrieve the payment intent from Stripe to verify it actually succeeded
+      intent = Stripe::PaymentIntent.retrieve(params[:payment_intent])
+
+      if intent.status == 'succeeded'
+        payment.update!(
+          status: 'succeeded',
+          paid_at: Time.current,
+          stripe_payment_intent_id: intent.id,
+          stripe_charge_id: intent.latest_charge
+        )
+
+        # Update booking status to confirmed
+        @booking.update!(status: 'confirmed')
+
+        flash[:notice] = "Payment successful! Your booking is confirmed."
+      end
+    rescue Stripe::StripeError => e
+      Rails.logger.error "Failed to verify payment intent: #{e.message}"
+    end
   end
 end

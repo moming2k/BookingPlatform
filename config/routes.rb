@@ -41,6 +41,7 @@ Rails.application.routes.draw do
       post :cancel
       post :reschedule
       get :receipt
+      get :check_payment_status
     end
 
     resource :payment, only: [:show] do

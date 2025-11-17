@@ -3,7 +3,9 @@ class SessionsController < ApplicationController
   before_action :redirect_if_authenticated, only: [:new, :create], unless: :admin_area?
 
   def new
-    # Show login form
+    # If user came to login page voluntarily (not redirected from a protected page),
+    # set return path to homepage
+    session[:return_to] ||= root_path
   end
 
   def create
@@ -33,7 +35,13 @@ class SessionsController < ApplicationController
 
       # Generate and send magic link
       user.generate_magic_link!
-      MagicLinkMailer.send_magic_link(user).deliver_later
+
+      # Use deliver_now in development so letter_opener can open browser tab
+      if Rails.env.development?
+        MagicLinkMailer.send_magic_link(user).deliver_now
+      else
+        MagicLinkMailer.send_magic_link(user).deliver_later
+      end
 
       redirect_to login_path, notice: "Check your email for a magic link to sign in."
     else

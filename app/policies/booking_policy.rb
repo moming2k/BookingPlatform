@@ -35,6 +35,10 @@ class BookingPolicy < ApplicationPolicy
     user_owns_booking?
   end
 
+  def check_payment_status?
+    user_owns_booking?
+  end
+
   class Scope < ApplicationPolicy::Scope
     def resolve
       scope.where(user: user)
