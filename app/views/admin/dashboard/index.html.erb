@@ -72,6 +72,59 @@
       </div>
     </div>
 
+    <!-- Next 3 Days Bookings Summary -->
+    <div class="bg-white rounded-lg shadow mb-8">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-xl font-bold text-gray-900">Next 3 Days Schedule</h2>
+      </div>
+      <div class="px-6 py-4">
+        <% if @next_three_days_bookings.values.flatten.any? %>
+          <% @next_three_days_bookings.each do |date, bookings| %>
+            <div class="mb-6 last:mb-0">
+              <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                <%= date.strftime("%A, %B %d, %Y") %>
+                <span class="ml-3 px-2 py-1 text-xs font-medium rounded-full <%= date == Date.current ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600' %>">
+                  <%= bookings.count %> <%= 'booking'.pluralize(bookings.count) %>
+                </span>
+              </h3>
+
+              <% if bookings.any? %>
+                <div class="space-y-2">
+                  <% bookings.each do |booking| %>
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div class="flex items-center space-x-4">
+                        <div class="text-sm font-medium text-gray-900">
+                          <%= booking.start_time.strftime("%I:%M %p") %>
+                        </div>
+                        <div class="h-8 w-px bg-gray-300"></div>
+                        <div>
+                          <div class="text-sm font-medium text-gray-900"><%= booking.user.name %></div>
+                          <div class="text-xs text-gray-500"><%= booking.service.name %></div>
+                        </div>
+                      </div>
+                      <div class="flex items-center space-x-3">
+                        <span class="text-sm font-medium text-gray-700">$<%= number_with_precision(booking.amount, precision: 2) %></span>
+                        <% case booking.status %>
+                        <% when 'confirmed' %>
+                          <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Confirmed</span>
+                        <% when 'pending' %>
+                          <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                        <% end %>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              <% else %>
+                <p class="text-gray-500 text-sm italic">No bookings scheduled</p>
+              <% end %>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-gray-500 text-center py-8">No bookings scheduled for the next 3 days</p>
+        <% end %>
+      </div>
+    </div>
+
     <!-- Top Services -->
     <div class="bg-white rounded-lg shadow mb-8">
       <div class="px-6 py-4 border-b border-gray-200">
@@ -200,6 +253,10 @@
                       <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Confirmed</span>
                     <% when 'pending' %>
                       <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                    <% when 'cancelled' %>
+                      <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Cancelled</span>
+                    <% when 'completed' %>
+                      <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Completed</span>
                     <% end %>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$<%= number_with_precision(booking.amount, precision: 2) %></td>

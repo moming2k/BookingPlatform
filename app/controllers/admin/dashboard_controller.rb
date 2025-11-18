@@ -2,6 +2,7 @@ module Admin
   class DashboardController < BaseController
     def index
       @stats = fetch_dashboard_stats
+      @next_three_days_bookings = fetch_next_three_days_bookings
       @recent_bookings = fetch_recent_bookings
       @upcoming_bookings = fetch_upcoming_bookings
       @recent_payments = fetch_recent_payments
@@ -64,6 +65,20 @@ module Admin
       Booking.where(created_at: 30.days.ago..Date.current)
              .group_by_day(:created_at)
              .count
+    end
+
+    def fetch_next_three_days_bookings
+      today = Date.current
+      next_three_days = (today..today + 2.days).to_a
+
+      bookings_by_date = {}
+      next_three_days.each do |date|
+        bookings_by_date[date] = Booking.includes(:user, :service)
+                                        .where(start_time: date.beginning_of_day..date.end_of_day)
+                                        .where(status: ['pending', 'confirmed'])
+                                        .order(:start_time)
+      end
+      bookings_by_date
     end
   end
 end
