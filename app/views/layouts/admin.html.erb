@@ -15,6 +15,83 @@
   </head>
 
   <body class="min-h-screen bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex">
+            <!-- Logo -->
+            <div class="flex-shrink-0 flex items-center">
+              <%= link_to root_path, class: "text-xl font-bold text-primary-600" do %>
+                Booking Platform
+              <% end %>
+            </div>
+
+            <!-- Main Navigation -->
+            <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+              <%= link_to "Services", services_path,
+                  class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700" %>
+
+              <%= link_to "Admin Dashboard", admin_dashboard_path,
+                  class: "inline-flex items-center px-1 pt-1 text-sm font-medium text-primary-600 border-b-2 border-primary-600" %>
+            </div>
+          </div>
+
+          <!-- Right Navigation -->
+          <div class="hidden sm:ml-6 sm:flex sm:items-center">
+            <!-- User dropdown -->
+            <div class="ml-3 relative" id="user-menu-container">
+              <button type="button"
+                      id="user-menu-button"
+                      class="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-primary-500 text-white">
+                  <%= current_user.initials %>
+                </span>
+              </button>
+
+              <div id="user-menu-dropdown"
+                   class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 z-50">
+                <div class="px-4 py-2 text-sm text-gray-700 border-b">
+                  <%= current_user.display_name %>
+                  <div class="text-xs text-gray-500"><%= current_user.email %></div>
+                </div>
+
+                <%= link_to "Profile", profile_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                <%= link_to "My Bookings", bookings_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                <hr class="my-1">
+                <%= button_to "Sign Out", logout_path, method: :delete,
+                    class: "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mobile menu button -->
+          <div class="flex items-center sm:hidden">
+            <button type="button"
+                    id="mobile-menu-button"
+                    class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile menu -->
+      <div id="mobile-menu" class="hidden sm:hidden">
+        <div class="pt-2 pb-3 space-y-1">
+          <%= link_to "Services", services_path, class: "block pl-3 pr-4 py-2 text-base font-medium text-gray-500" %>
+          <%= link_to "Admin Dashboard", admin_dashboard_path, class: "block pl-3 pr-4 py-2 text-base font-medium text-primary-600 bg-primary-50 border-l-4 border-primary-600" %>
+          
+          <hr class="my-2">
+          <%= link_to "Profile", profile_path, class: "block pl-3 pr-4 py-2 text-base font-medium text-gray-500" %>
+          <%= link_to "My Bookings", bookings_path, class: "block pl-3 pr-4 py-2 text-base font-medium text-gray-500" %>
+          <%= button_to "Sign Out", logout_path, method: :delete, class: "block w-full text-left pl-3 pr-4 py-2 text-base font-medium text-gray-500" %>
+        </div>
+      </div>
+    </nav>
+
     <div class="flex flex-col min-h-screen">
       <!-- Flash messages -->
       <div class="px-4 sm:px-6 lg:px-8">
@@ -64,5 +141,40 @@
         <%= yield %>
       </main>
     </div>
+
+    <script>
+      // User menu dropdown and mobile menu
+      document.addEventListener('DOMContentLoaded', function() {
+        // Desktop user menu dropdown
+        const button = document.getElementById('user-menu-button');
+        const dropdown = document.getElementById('user-menu-dropdown');
+
+        if (button && dropdown) {
+          button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdown.classList.toggle('hidden');
+          });
+
+          // Close dropdown when clicking outside
+          document.addEventListener('click', function(e) {
+            const container = document.getElementById('user-menu-container');
+            if (container && !container.contains(e.target)) {
+              dropdown.classList.add('hidden');
+            }
+          });
+        }
+
+        // Mobile menu toggle
+        const mobileButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        if (mobileButton && mobileMenu) {
+          mobileButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            mobileMenu.classList.toggle('hidden');
+          });
+        }
+      });
+    </script>
   </body>
 </html>
