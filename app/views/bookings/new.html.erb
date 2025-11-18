@@ -93,33 +93,66 @@
   function createCalendar() {
     const calendarGrid = document.getElementById('calendar-grid');
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize to start of day
 
-    for (let i = 0; i < 30; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
+    // Find the Sunday of the current week
+    const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const daysFromSunday = currentDay; // Days since last Sunday
+    
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - daysFromSunday);
+
+    // Add weekday headers
+    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    weekdays.forEach(day => {
+      const header = document.createElement('div');
+      header.className = 'text-center font-semibold text-gray-700 text-sm py-2';
+      header.textContent = day;
+      calendarGrid.appendChild(header);
+    });
+
+    // Display 5 complete weeks (35 days)
+    const totalDays = 35;
+
+    for (let i = 0; i < totalDays; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
       const dateStr = date.toISOString().split('T')[0];
       const hasAvailability = availableDates[dateStr];
+      const isPast = date < today;
 
       const button = document.createElement('button');
       button.type = 'button';
-      button.className = hasAvailability
-        ? 'p-2 text-center rounded bg-success-50 hover:bg-success-100 cursor-pointer'
-        : 'p-2 text-center rounded bg-gray-100 cursor-not-allowed';
-      button.disabled = !hasAvailability;
+      
+      // Determine styling based on availability and whether date is in the past
+      if (isPast) {
+        button.className = 'p-2 text-center rounded bg-gray-50 text-gray-400 cursor-not-allowed';
+        button.disabled = true;
+      } else if (hasAvailability) {
+        button.className = 'p-2 text-center rounded bg-success-50 hover:bg-success-100 cursor-pointer';
+        button.disabled = false;
+      } else {
+        button.className = 'p-2 text-center rounded bg-gray-100 cursor-not-allowed';
+        button.disabled = true;
+      }
+      
       button.dataset.date = dateStr;
-
-      const weekday = document.createElement('div');
-      weekday.className = 'text-xs text-gray-600';
-      weekday.textContent = date.toLocaleDateString('en-US', {weekday: 'short'});
 
       const day = document.createElement('div');
       day.className = 'font-semibold';
       day.textContent = date.getDate();
 
-      button.appendChild(weekday);
-      button.appendChild(day);
+      const month = document.createElement('div');
+      month.className = 'text-xs text-gray-600';
+      // Show month name for the 1st of each month or the first day in the calendar
+      if (date.getDate() === 1 || i === 0) {
+        month.textContent = date.toLocaleDateString('en-US', {month: 'short'});
+      }
 
-      if (hasAvailability) {
+      button.appendChild(day);
+      button.appendChild(month);
+
+      if (hasAvailability && !isPast) {
         button.addEventListener('click', () => loadTimeSlots(dateStr, serviceId));
       }
 
