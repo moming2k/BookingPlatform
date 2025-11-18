@@ -1,0 +1,100 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <div class="text-center mb-12">
+    <h1 class="text-4xl font-bold mb-4">Contact Us</h1>
+    <p class="text-xl text-gray-600">We'd love to hear from you</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+    <!-- Contact Information -->
+    <div>
+      <h2 class="text-2xl font-bold mb-6">Get in Touch</h2>
+      
+      <div class="space-y-6">
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <svg class="h-6 w-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-lg font-semibold">Email</h3>
+            <p class="text-gray-600">support@bookingplatform.com</p>
+          </div>
+        </div>
+
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <svg class="h-6 w-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-lg font-semibold">Business Hours</h3>
+            <p class="text-gray-600">Monday - Friday: 9:00 AM - 6:00 PM</p>
+            <p class="text-gray-600">Saturday: 10:00 AM - 4:00 PM</p>
+            <p class="text-gray-600">Sunday: Closed</p>
+          </div>
+        </div>
+
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <svg class="h-6 w-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-lg font-semibold">Response Time</h3>
+            <p class="text-gray-600">We typically respond within 24 hours during business days.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 p-6 bg-primary-50 rounded-lg">
+        <h3 class="text-lg font-semibold mb-2">Need immediate assistance?</h3>
+        <p class="text-gray-600 mb-4">For urgent booking inquiries, please use our <%= link_to "online booking system", services_path, class: "text-primary-600 hover:text-primary-700 font-semibold" %> for the fastest service.</p>
+      </div>
+    </div>
+
+    <!-- Contact Form -->
+    <div class="card">
+      <div class="card-body">
+        <h2 class="text-2xl font-bold mb-6">Send us a Message</h2>
+        
+        <%= form_with url: "#", method: :post, class: "space-y-6" do |f| %>
+          <div>
+            <%= f.label :name, "Name", class: "form-label" %>
+            <%= f.text_field :name, class: "form-input", placeholder: "Your name", required: true %>
+          </div>
+
+          <div>
+            <%= f.label :email, "Email", class: "form-label" %>
+            <%= f.email_field :email, class: "form-input", placeholder: "your.email@example.com", required: true %>
+          </div>
+
+          <div>
+            <%= f.label :subject, "Subject", class: "form-label" %>
+            <%= f.select :subject, 
+                options_for_select([
+                  "General Inquiry",
+                  "Booking Question",
+                  "Technical Support",
+                  "Billing Question",
+                  "Feedback",
+                  "Other"
+                ]),
+                {},
+                class: "form-input" %>
+          </div>
+
+          <div>
+            <%= f.label :message, "Message", class: "form-label" %>
+            <%= f.text_area :message, rows: 5, class: "form-input", placeholder: "How can we help you?", required: true %>
+          </div>
+
+          <%= f.submit "Send Message", class: "btn-primary w-full", disabled: true %>
+          <p class="text-sm text-gray-500 text-center">Contact form coming soon. Please email us directly at support@bookingplatform.com</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

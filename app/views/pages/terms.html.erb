@@ -1,0 +1,115 @@
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <h1 class="text-4xl font-bold mb-8">Terms of Service</h1>
+  
+  <div class="prose prose-lg max-w-none">
+    <p class="text-sm text-gray-500 mb-8">Last updated: <%= Date.current.strftime("%B %d, %Y") %></p>
+
+    <h2 class="text-2xl font-semibold mt-8 mb-4">1. Acceptance of Terms</h2>
+    <p>
+      By accessing and using Booking Platform ("the Service"), you accept and agree to be bound by the terms and 
+      provisions of this agreement. If you do not agree to these terms, please do not use the Service.
+    </p>
+
+    <h2 class="text-2xl font-semibold mt-8 mb-4">2. Use of Service</h2>
+    <p>
+      You agree to use the Service only for lawful purposes and in accordance with these Terms. You agree not to use the Service:
+    </p>
+    <ul class="list-disc pl-6 space-y-2">
+      <li>In any way that violates any applicable federal, state, local, or international law or regulation</li>
+      <li>To transmit any material that is defamatory, offensive, or otherwise objectionable</li>
+      <li>To impersonate or attempt to impersonate another person or entity</li>
+      <li>To engage in any conduct that restricts or inhibits anyone's use of the Service</li>
+    </ul>
+
+    <h2 class="text-2xl font-semibold mt-8 mb-4">3. Booking and Appointments</h2>
+    <p>
+      When you book an appointment through our Service:
+    </p>
+    <ul class="list-disc pl-6 space-y-2">
+      <li>You agree to provide accurate and complete information</li>
+      <li>You are responsible for maintaining the confidentiality of your account</li>
+      <li>You agree to arrive on time for your scheduled appointment</li>
+      <li>You understand that appointment availability is subject to change</li>
+    </ul>
+
+    <h2 class="text-2xl font-semibold mt-8 mb-4">4. Payment Terms</h2>
+    <p>
+      All payments are processed securely through Stripe. By making a booking, you agree to:
+    </p>
+    <ul class="list-disc pl-6 space-y-2">
+      <li>Pay the full amount at the time of booking</li>
+      <li>Provide valid payment information</li>
+      <li>Accept that all prices are in USD and include applicable taxes</li>
+      <li>Understand that payment is required to confirm your booking</li>
+    </ul>
+
+    <h2 class="text-2xl font-semibold mt-8 mb-4">5. Cancellation and Refund Policy</h2>
+    <p>
+      Our cancellation policy is as follows:
+    </p>
+    <ul class="list-disc pl-6 space-y-2">
+      <li><strong>More than 24 hours before appointment:</strong> Full refund</li>
+      <li><strong>Less than 24 hours before appointment:</strong> 50% refund</li>
+      <li><strong>No-show:</strong> No refund</li>
+      <li>Refunds are processed within 5-10 business days</li>
+    </ul>
+
+    <h2 class="text-2xl font-semibold mt-8 mb-4">6. Rescheduling</h2>
+    <p>
+      You may reschedule your appointment at no additional cost, subject to availability. Rescheduling must be done 
+      through your account dashboard or by contacting us directly.
+    </p>
+
+    <h2 class="text-2xl font-semibold mt-8 mb-4">7. User Accounts</h2>
+    <p>
+      To use certain features of the Service, you may be required to create an account. You are responsible for:
+    </p>
+    <ul class="list-disc pl-6 space-y-2">
+      <li>Maintaining the security of your account</li>
+      <li>All activities that occur under your account</li>
+      <li>Notifying us immediately of any unauthorized use</li>
+    </ul>
+
+    <h2 class="text-2xl font-semibold mt-8 mb-4">8. Intellectual Property</h2>
+    <p>
+      The Service and its original content, features, and functionality are owned by Booking Platform and are 
+      protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.
+    </p>
+
+    <h2 class="text-2xl font-semibold mt-8 mb-4">9. Limitation of Liability</h2>
+    <p>
+      In no event shall Booking Platform, nor its directors, employees, partners, agents, suppliers, or affiliates, 
+      be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, 
+      loss of profits, data, use, goodwill, or other intangible losses.
+    </p>
+
+    <h2 class="text-2xl font-semibold mt-8 mb-4">10. Disclaimer</h2>
+    <p>
+      The Service is provided on an "AS IS" and "AS AVAILABLE" basis. The Service is provided without warranties of 
+      any kind, whether express or implied, including, but not limited to, implied warranties of merchantability, 
+      fitness for a particular purpose, non-infringement, or course of performance.
+    </p>
+
+    <h2 class="text-2xl font-semibold mt-8 mb-4">11. Governing Law</h2>
+    <p>
+      These Terms shall be governed and construed in accordance with the laws of the jurisdiction in which we operate, 
+      without regard to its conflict of law provisions.
+    </p>
+
+    <h2 class="text-2xl font-semibold mt-8 mb-4">12. Changes to Terms</h2>
+    <p>
+      We reserve the right to modify or replace these Terms at any time. If a revision is material, we will provide 
+      at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be 
+      determined at our sole discretion.
+    </p>
+
+    <h2 class="text-2xl font-semibold mt-8 mb-4">13. Contact Us</h2>
+    <p>
+      If you have any questions about these Terms, please contact us at:
+    </p>
+    <p class="mt-2">
+      Email: <%= link_to "support@bookingplatform.com", "mailto:support@bookingplatform.com", class: "text-primary-600 hover:text-primary-700" %><br>
+      Or visit our <%= link_to "Contact Page", contact_path, class: "text-primary-600 hover:text-primary-700" %>
+    </p>
+  </div>
+</div>

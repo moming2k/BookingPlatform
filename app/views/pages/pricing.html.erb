@@ -1,0 +1,76 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <div class="text-center mb-12">
+    <h1 class="text-4xl font-bold mb-4">Pricing</h1>
+    <p class="text-xl text-gray-600">Choose the service that fits your needs</p>
+  </div>
+
+  <% if @services&.any? %>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+      <% @services.each do |service| %>
+        <div class="card hover:shadow-xl transition-shadow duration-300">
+          <div class="card-body">
+            <h3 class="text-2xl font-bold mb-2"><%= service.name %></h3>
+            <div class="text-4xl font-bold text-primary-600 mb-4">
+              $<%= service.price %>
+            </div>
+            <div class="text-gray-600 mb-4">
+              <svg class="inline-block w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <%= service.duration_minutes %> minutes
+            </div>
+            <p class="text-gray-600 mb-6"><%= service.description %></p>
+            <%= link_to "Book Now", new_booking_path(service_id: service.id), class: "btn-primary w-full text-center" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="text-center py-12">
+      <p class="text-gray-600 mb-6">No services available at the moment. Please check back later.</p>
+      <%= link_to "View All Services", services_path, class: "btn-primary" %>
+    </div>
+  <% end %>
+
+  <!-- FAQ Section -->
+  <div class="max-w-3xl mx-auto mt-16">
+    <h2 class="text-3xl font-bold text-center mb-8">Pricing FAQ</h2>
+    
+    <div class="space-y-6">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="text-lg font-semibold mb-2">What payment methods do you accept?</h3>
+          <p class="text-gray-600">We accept all major credit cards (Visa, Mastercard, American Express) and debit cards through our secure Stripe payment gateway.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <h3 class="text-lg font-semibold mb-2">When will I be charged?</h3>
+          <p class="text-gray-600">Payment is processed immediately upon booking confirmation to secure your appointment slot.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <h3 class="text-lg font-semibold mb-2">What is your cancellation policy?</h3>
+          <p class="text-gray-600">You can cancel your booking and receive a full refund up to 24 hours before your scheduled appointment. Cancellations made within 24 hours may be subject to a cancellation fee.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <h3 class="text-lg font-semibold mb-2">Can I reschedule my appointment?</h3>
+          <p class="text-gray-600">Yes! You can reschedule your appointment at no additional cost, subject to availability. Simply visit your booking details and select a new time slot.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <h3 class="text-lg font-semibold mb-2">Are there any hidden fees?</h3>
+          <p class="text-gray-600">No hidden fees! The price you see is the price you pay. All taxes and processing fees are included in the displayed price.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
