@@ -1,0 +1,7 @@
+<% if current_page.first? %>
+  <span class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
+    <%= raw(t 'views.pagination.first') %>
+  </span>
+<% else %>
+  <%= link_to raw(t 'views.pagination.first'), url, remote: remote, class: 'relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50' %>
+<% end %>

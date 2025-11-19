@@ -152,7 +152,20 @@
     <!-- Pagination -->
     <% if @payments.any? %>
       <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-        <%= paginate @payments %>
+        <div class="flex items-center justify-between">
+          <div class="text-sm text-gray-700">
+            Showing
+            <span class="font-medium"><%= @payments.offset_value + 1 %></span>
+            to
+            <span class="font-medium"><%= [@payments.offset_value + @payments.length, @payments.total_count].min %></span>
+            of
+            <span class="font-medium"><%= @payments.total_count %></span>
+            results
+          </div>
+          <div>
+            <%= paginate @payments %>
+          </div>
+        </div>
       </div>
     <% end %>
   </div>
