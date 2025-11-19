@@ -1,0 +1,133 @@
+<div class="px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header with Back Button -->
+  <div class="mb-8">
+    <%= link_to "← Back to Payments", admin_payments_path(params.permit(:search, :status, :date_range, :min_amount, :max_amount, :page)), class: "text-primary-600 hover:text-primary-700 mb-4 inline-block" %>
+    <div class="flex justify-between items-start">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">Payment Details</h1>
+        <p class="mt-2 text-sm text-gray-600">Transaction ID: <%= @payment.stripe_payment_intent_id || 'N/A' %></p>
+      </div>
+      <div>
+        <% case @payment.status %>
+        <% when 'succeeded' %>
+          <span class="px-4 py-2 text-sm font-semibold rounded-full bg-green-100 text-green-800">Paid</span>
+        <% when 'pending' %>
+          <span class="px-4 py-2 text-sm font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+        <% when 'failed' %>
+          <span class="px-4 py-2 text-sm font-semibold rounded-full bg-red-100 text-red-800">Failed</span>
+        <% when 'refunded' %>
+          <span class="px-4 py-2 text-sm font-semibold rounded-full bg-purple-100 text-purple-800">Refunded</span>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Content -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Payment Summary -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-xl font-bold text-gray-900">Payment Summary</h2>
+        </div>
+        <div class="px-6 py-4 space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm font-medium text-gray-500">Amount</p>
+              <p class="mt-1 text-2xl font-bold text-gray-900">$<%= number_with_precision(@payment.amount, precision: 2) %></p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-500">Payment Date</p>
+              <p class="mt-1 text-sm text-gray-900"><%= @payment.created_at.strftime("%B %d, %Y at %I:%M %p") %></p>
+            </div>
+          </div>
+          <div class="pt-4 border-t">
+            <p class="text-sm font-medium text-gray-500">Transaction ID</p>
+            <p class="mt-1 text-sm text-gray-900 font-mono break-all"><%= @payment.stripe_payment_intent_id || 'N/A' %></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Related Booking -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-xl font-bold text-gray-900">Related Booking</h2>
+        </div>
+        <div class="px-6 py-4 space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm font-medium text-gray-500">Booking Reference</p>
+              <p class="mt-1 text-sm">
+                <%= link_to @payment.booking.booking_reference, admin_booking_path(@payment.booking), class: "text-primary-600 hover:text-primary-900 font-medium" %>
+              </p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-500">Service</p>
+              <p class="mt-1 text-sm text-gray-900"><%= @payment.booking.service.name %></p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-500">Date & Time</p>
+              <p class="mt-1 text-sm text-gray-900">
+                <%= @payment.booking.start_time.strftime("%b %d, %Y at %I:%M %p") %>
+              </p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-500">Booking Status</p>
+              <p class="mt-1">
+                <% case @payment.booking.status %>
+                <% when 'confirmed' %>
+                  <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Confirmed</span>
+                <% when 'pending' %>
+                  <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                <% when 'completed' %>
+                  <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Completed</span>
+                <% when 'cancelled' %>
+                  <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Cancelled</span>
+                <% end %>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Information -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-xl font-bold text-gray-900">Customer Information</h2>
+        </div>
+        <div class="px-6 py-4 space-y-4">
+          <div class="flex items-center space-x-4">
+            <div class="h-12 w-12 rounded-full bg-primary-500 flex items-center justify-center text-white font-semibold">
+              <%= @payment.user.initials %>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-900"><%= @payment.user.name %></p>
+              <p class="text-sm text-gray-500"><%= @payment.user.email %></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Actions -->
+    <div class="lg:col-span-1">
+      <div class="bg-white rounded-lg shadow sticky top-8">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-xl font-bold text-gray-900">Actions</h2>
+        </div>
+        <div class="px-6 py-4 space-y-3">
+          <% if @payment.status == 'succeeded' %>
+            <%= button_to "Issue Refund", refund_admin_payment_path(@payment), method: :post, class: "btn btn-danger w-full", data: { confirm: "Are you sure you want to refund this payment?" } %>
+          <% end %>
+          
+          <%= link_to "View Booking", admin_booking_path(@payment.booking), class: "btn btn-secondary w-full text-center" %>
+          <%= link_to "View Customer", admin_user_path(@payment.user), class: "btn btn-secondary w-full text-center" %>
+          
+          <% if @payment.stripe_payment_intent_id.present? %>
+            <%= link_to "View in Stripe", "https://dashboard.stripe.com/payments/#{@payment.stripe_payment_intent_id}", target: "_blank", class: "btn btn-secondary w-full text-center" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
