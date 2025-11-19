@@ -54,7 +54,17 @@
                 <div class="px-4 py-2 text-sm text-gray-700 border-b">
                   <%= current_user.display_name %>
                   <div class="text-xs text-gray-500"><%= current_user.email %></div>
+                  <% if session[:admin_user_id].present? %>
+                    <div class="mt-1 px-2 py-1 text-xs font-semibold rounded bg-yellow-100 text-yellow-800">
+                      Impersonating
+                    </div>
+                  <% end %>
                 </div>
+
+                <% if session[:admin_user_id].present? %>
+                  <%= button_to "Stop Impersonating", stop_impersonating_admin_users_path, method: :post,
+                      class: "block w-full text-left px-4 py-2 text-sm font-semibold text-yellow-700 hover:bg-yellow-50 border-b" %>
+                <% end %>
 
                 <%= link_to "Profile", profile_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
                 <%= link_to "My Bookings", bookings_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>

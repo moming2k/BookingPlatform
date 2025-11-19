@@ -1,27 +1,25 @@
 Rails.application.routes.draw do
   # Root path
-  root "home#index"
+  root 'home#index'
 
   # Authentication routes
-  get "login", to: "sessions#new", as: :login
-  post "login", to: "sessions#create"
-  get "magic_link/:token", to: "sessions#magic_link", as: :magic_link
-  delete "logout", to: "sessions#destroy", as: :logout
+  get 'login', to: 'sessions#new', as: :login
+  post 'login', to: 'sessions#create'
+  get 'magic_link/:token', to: 'sessions#magic_link', as: :magic_link
+  delete 'logout', to: 'sessions#destroy', as: :logout
 
   # Test-only routes (only available in development/test)
-  if Rails.env.development? || Rails.env.test?
-    get "test_login", to: "test_sessions#create"
-  end
+  get 'test_login', to: 'test_sessions#create' if Rails.env.development? || Rails.env.test?
 
   # Public pages
-  get "about", to: "pages#about"
-  get "contact", to: "pages#contact"
-  get "pricing", to: "pages#pricing"
-  get "terms", to: "pages#terms"
-  get "privacy", to: "pages#privacy"
+  get 'about', to: 'pages#about'
+  get 'contact', to: 'pages#contact'
+  get 'pricing', to: 'pages#pricing'
+  get 'terms', to: 'pages#terms'
+  get 'privacy', to: 'pages#privacy'
 
   # Services (public viewing)
-  resources :services, only: [:index, :show] do
+  resources :services, only: %i[index show] do
     member do
       get :availability
       get :calendar
@@ -53,14 +51,14 @@ Rails.application.routes.draw do
   end
 
   # Booking review and confirmation
-  get "bookings/review", to: "bookings#review", as: :review_booking
-  get "bookings/confirm", to: "bookings#confirm", as: :confirm_booking
+  get 'bookings/review', to: 'bookings#review', as: :review_booking
+  get 'bookings/confirm', to: 'bookings#confirm', as: :confirm_booking
 
   # Calendar view
-  get "calendar", to: "bookings#calendar", as: :calendar
+  get 'calendar', to: 'bookings#calendar', as: :calendar
 
   # User profile
-  resource :profile, only: [:show, :edit, :update] do
+  resource :profile, only: %i[show edit update] do
     member do
       get :bookings
       get :payments
@@ -69,17 +67,20 @@ Rails.application.routes.draw do
   end
 
   # Stripe webhooks
-  post "webhooks/stripe", to: "payments#webhook"
+  post 'webhooks/stripe', to: 'payments#webhook'
 
   # Admin area
   namespace :admin do
-    root "dashboard#index", as: :dashboard
+    root 'dashboard#index', as: :dashboard
 
     resources :users do
       member do
         post :make_admin
         post :revoke_admin
         post :impersonate
+      end
+      collection do
+        post :stop_impersonating
       end
     end
 
@@ -114,7 +115,7 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :audit_logs, only: [:index, :show]
+    resources :audit_logs, only: %i[index show]
 
     # Reports
     namespace :reports do
@@ -126,7 +127,7 @@ Rails.application.routes.draw do
     end
 
     # Settings
-    resource :settings, only: [:show, :update] do
+    resource :settings, only: %i[show update] do
       member do
         get :email
         get :payment
@@ -141,13 +142,13 @@ Rails.application.routes.draw do
   # API endpoints (for future mobile app or integrations)
   namespace :api do
     namespace :v1 do
-      resources :services, only: [:index, :show] do
+      resources :services, only: %i[index show] do
         member do
           get :availability
         end
       end
 
-      resources :bookings, only: [:index, :show, :create] do
+      resources :bookings, only: %i[index show create] do
         member do
           post :cancel
         end
@@ -162,12 +163,12 @@ Rails.application.routes.draw do
   end
 
   # Health check
-  get "health", to: "health#index"
+  get 'health', to: 'health#index'
 
   # Sidekiq Web UI (admin only)
-  require "sidekiq/web"
+  require 'sidekiq/web'
   authenticate :user, ->(user) { user.admin? } do
-    mount Sidekiq::Web => "/sidekiq"
+    mount Sidekiq::Web => '/sidekiq'
   end
 
   # Letter Opener Web (development only)
@@ -176,5 +177,5 @@ Rails.application.routes.draw do
   # end
 
   # Catch all route for 404s
-  match "*path", to: "errors#not_found", via: :all
+  match '*path', to: 'errors#not_found', via: :all
 end

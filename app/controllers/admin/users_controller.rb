@@ -49,6 +49,17 @@ module Admin
       redirect_to root_path, notice: "Now impersonating #{@user.name}"
     end
 
+    def stop_impersonating
+      admin_id = session[:admin_user_id]
+      if admin_id
+        session[:user_id] = admin_id
+        session.delete(:admin_user_id)
+        redirect_to admin_dashboard_path, notice: 'Stopped impersonating user'
+      else
+        redirect_to root_path, alert: 'Not currently impersonating'
+      end
+    end
+
     private
 
     def fetch_user_stats
