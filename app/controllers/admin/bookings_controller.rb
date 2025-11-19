@@ -11,7 +11,8 @@ module Admin
         format.csv do
           send_data generate_csv(fetch_bookings(paginate: false)),
                     filename: "bookings-#{Date.current}.csv",
-                    type: 'text/csv'
+                    type: 'text/csv',
+                    disposition: 'attachment'
         end
       end
     end
