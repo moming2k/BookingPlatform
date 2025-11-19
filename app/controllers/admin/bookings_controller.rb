@@ -1,8 +1,19 @@
+require 'csv'
+
 module Admin
   class BookingsController < BaseController
     def index
       @stats = fetch_booking_stats
       @bookings = fetch_bookings
+
+      respond_to do |format|
+        format.html
+        format.csv do
+          send_data generate_csv(fetch_bookings(paginate: false)),
+                    filename: "bookings-#{Date.current}.csv",
+                    type: 'text/csv'
+        end
+      end
     end
 
     def show
