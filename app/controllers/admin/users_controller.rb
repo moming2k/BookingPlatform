@@ -2,6 +2,8 @@ require 'csv'
 
 module Admin
   class UsersController < BaseController
+    skip_before_action :require_admin!, only: [:stop_impersonating]
+
     def index
       @stats = fetch_user_stats
       @users = fetch_users
@@ -54,6 +56,7 @@ module Admin
       if admin_id
         session[:user_id] = admin_id
         session.delete(:admin_user_id)
+        @current_user = nil # Clear memoized current_user to reload from session
         redirect_to admin_dashboard_path, notice: 'Stopped impersonating user'
       else
         redirect_to root_path, alert: 'Not currently impersonating'
