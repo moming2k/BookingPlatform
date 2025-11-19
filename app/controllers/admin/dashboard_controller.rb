@@ -47,10 +47,10 @@ module Admin
     def fetch_top_services
       Service.joins(:bookings)
              .where(bookings: { status: %w[confirmed completed] })
-             .group("services.id")
-             .order("COUNT(bookings.id) DESC")
+             .group('services.id')
+             .order('COUNT(bookings.id) DESC')
              .limit(5)
-             .pluck("services.name", "COUNT(bookings.id)", "SUM(bookings.amount)")
+             .pluck('services.name', 'COUNT(bookings.id)', 'SUM(bookings.amount)')
              .map { |name, count, revenue| { name: name, bookings: count, revenue: revenue } }
     end
 
@@ -75,7 +75,7 @@ module Admin
       next_three_days.each do |date|
         bookings_by_date[date] = Booking.includes(:user, :service)
                                         .where(start_time: date.beginning_of_day..date.end_of_day)
-                                        .where(status: ['pending', 'confirmed'])
+                                        .where(status: %w[pending confirmed])
                                         .order(:start_time)
       end
       bookings_by_date
